@@ -27,10 +27,6 @@ const pool = new Pool({
 // app use
 app.use(session({
     secret: 'Tshimugaramafatha',
-    cookie: {
-        maxAge: 60000
-    }
-
 }));
 app.use(flash());
 app.use('/', express.static(__dirname + '/public'));
@@ -44,19 +40,30 @@ app.engine('handlebars', exphbs({
 app.set('view engine', 'handlebars');
 
 
+let checkUser = (req, res) => {
+    console.log('Checking user ...')
 
-app.get('/', ((req, res) => {
-    console.log(req.session)
-
-    if (req.session.username) {
-        res.render('logged', {
-            username: req.session.username
-        })
-
-    } else {
+    if (!req.session.username) {
+        console.log('sending user to login page...')
         res.render('login');
     }
 
+    if (req.session.username) {
+        res.render('logged', {
+            currentUsername: req.session.username
+        });
+    }
+};
+
+// app.use(checkUser);
+
+
+
+app.get('/', checkUser, ((req, res) => {
+    console.log('Now Rendering logged ')
+    res.render('logged', {
+        currentUsername: req.session.username
+    });
 }));
 
 
@@ -90,14 +97,6 @@ app.get('/logout', ((req, res) => {
     delete req.session.username;
     res.redirect('/');
 }));
-
-
-
-
-
-
-
-
 
 
 const PORT = process.env.PORT || 5000;
